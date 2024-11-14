@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment Page</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+  }
+  
+  .container {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+  }
+
+  h2 {
+    text-align: center;
+    color: #333;
+  }
+
+  form {
+    margin-top: 20px;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+  }
+
+  input[type="submit"],
+  .payment-option {
+    padding: 10px 15px;
+    margin-top: 5px;
+    margin-left: 33%;
+    font-size: 14px;
+    cursor: pointer;
+    text-transform: uppercase;
+    background-color: #f05e8a;
+    color: var(--white);
+    border: none;
+    border-radius: 15px;
+    font-weight: 500;
+    border: 1px solid #f05e8a;
+    transition: 0.5s;
+}
+  
+
+  input[type="submit"]:hover,
+  .payment-option:hover {
+    background-color: var(--white);
+    font-weight: 600;
+    color: palevioletred;
+}
+  
+
+  .payment-fields {
+    display: none;
+  }
+
+  .message {
+    text-align: center;
+    background-color: #4CAF50;
+    color: white;
+    padding: 20px;
+    border-radius: 5px;
+    margin-top: 20px;
+  }
+
+  @media only screen and (max-width: 600px) {
+    .container {
+      max-width: 100%;
+    }
+  }
+
+  /* #payment-form input{
+    padding: 12px 20px;
+    margin-top: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    text-transform: uppercase;
+    background: linear-gradient(45deg, #f05e8a, #fc2a85);
+    color: #fff;
+    border: none;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  #payment-form input:hover{
+    background: linear-gradient(45deg, #fc2a85, #f05e8a);
+    box-shadow: 0 5px 15px rgba(240, 94, 138, 0.4);
+  } */
+  /* .pay-btn{
+    padding: 10px 15px;
+    margin-top: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    text-transform: uppercase;
+    background-color: #f05e8a;
+    color: var(--white);
+    border: none;
+    border-radius: 15px;
+    font-weight: 500;
+    border: 1px solid #f05e8a;
+    transition: 0.5s;
+  }
+
+  .pay-btn:hover{
+    background-color: var(--white);
+    font-weight: 600;
+    color: palevioletred;
+}
+  } */
+
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Payment Details</h2>
+  <form id="payment-form">
+    <label for="payment-method">Select Payment Method</label>
+    <select id="payment-method" name="payment-method" required>
+      <option value="credit-debit-card">Credit/Debit Card</option>
+      <option value="gpay">Google Pay</option>
+      <option value="paytm">Paytm</option>
+      <option value="cod">Cash on Delivery</option>
+    </select>
+
+    <div id="credit-debit-card-fields" class="payment-fields">
+      <label for="card-number">Card Number</label>
+      <input type="text" id="card-number" name="card-number" placeholder="Enter your card number">
+      
+      <label for="card-expiry">Expiration Date</label>
+      <input type="text" id="card-expiry" name="card-expiry" placeholder="MM/YY">
+
+      <label for="card-cvv">CVV</label>
+      <input type="text" id="card-cvv" name="card-cvv" placeholder="CVV">
+
+      <label for="card-holder-name">Cardholder Name</label>
+      <input type="text" id="card-holder-name" name="card-holder-name" placeholder="Enter cardholder name">
+    </div>
+
+    <div id="gpay-fields" class="payment-fields">
+      <!-- Google Pay fields -->
+      <label for="gpay-upi">UPI Number</label>
+      <input type="text" id="gpay-upi" name="gpay-upi" placeholder="Enter your UPI number">
+
+      
+    </div>
+
+    <div id="paytm-fields" class="payment-fields">
+      <!-- Paytm fields -->
+      <label for="paytm-upi">UPI Number</label>
+      <input type="text" id="paytm-upi" name="paytm-upi" placeholder="Enter your UPI number">
+
+    </div>
+
+    <div id="cod-fields" class="payment-fields">
+      <!-- Cash on Delivery fields -->
+      <p>You will pay by cash on delivery</p>
+    </div>
+
+    <input type="submit" value="Proceed to Payment">
+  </form>
+</div>
+
+<div id="message" class="message" style="display: none;">Thank you, your order has been placed.</div>
+
+<!-- Firebase scripts -->
+<script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-database.js"></script>
+<script>
+  // Your Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyDvC9AMwRzzMRoDv1wId7CyLB8xUAmrTzU",
+        authDomain: "ecom-f6cc0.firebaseapp.com",
+        databaseURL: "https://ecom-f6cc0-default-rtdb.firebaseio.com",
+        projectId: "ecom-f6cc0",
+        storageBucket: "ecom-f6cc0.appspot.com",
+        messagingSenderId: "763921053227",
+        appId: "1:763921053227:web:3e9eca1f2bb024ddfd1c6e",
+        measurementId: "G-F79K7LJPY0"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+
+  // Function to save payment details to Firebase database
+  function savePaymentDetails(paymentMethod, paymentData) {
+    var database = firebase.database();
+    var paymentsRef = database.ref('payments');
+    var newPaymentRef = paymentsRef.push();
+    newPaymentRef.set({
+      paymentMethod: paymentMethod,
+      paymentData: paymentData
+    })
+    .then(function() {
+      console.log("Payment details saved successfully.");
+      document.getElementById('message').style.display = 'block';
+      setTimeout(function() {
+        document.getElementById('message').style.display = 'none';
+      }, 3000); // Hide message after 3 seconds
+
+      window.location.href("index.html");
+      
+    })
+    .catch(function(error) {
+      console.error("Error saving payment details: ", error);
+    });
+  }
+
+  // Event listener for form submission
+  document.getElementById('payment-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    
+    // Check if any required fields are empty or invalid
+    if (!this.checkValidity()) {
+      // If the form is not valid, display an error message
+      alert('Please fill in all required fields correctly.');
+      return;
+    }
+
+    var paymentMethod = document.getElementById('payment-method').value;
+    var paymentData = {
+      // Collect payment data based on the selected payment method
+    };
+
+    // Save payment details to Firebase database
+    savePaymentDetails(paymentMethod, paymentData);
+  });
+
+  // Event listener for payment method selection
+  document.getElementById('payment-method').addEventListener('change', function() {
+    var selectedPaymentMethod = this.value;
+    var paymentFields = document.querySelectorAll('.payment-fields');
+    for (var i = 0; i < paymentFields.length; i++) {
+      paymentFields[i].style.display = 'none';
+    }
+    document.getElementById(selectedPaymentMethod + '-fields').style.display = 'block';
+  });
+</script>

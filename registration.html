@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="login.css">
+    <title>Registration</title>
+</head>
+
+<body background="https://i.postimg.cc/zfpq5wMh/login-bg.jpg" style="background-size: 100%;">
+    <div class="navbar">
+        <a class="active" href="index.html">Home</a>
+    </div>
+    <!-- Registration Form -->
+    <form id="registerForm">
+        <h2>Registration</h2>
+        <p>Username:</p>
+        <input id="uname" type="text" name="username" required><br>
+        <p>Enter Email:</p>
+        <input id="registerEmail" type="email" name="email" required><br>
+        <p>Enter Password:</p>
+        <input id="registerPassword" type="password" name="password" required><br>
+        <button type="button" id="registerButton">Register</button><br><br>
+        <p>Already have an account? <a href="login.html">Login</a></p>
+        <script>
+            var input = document.getElementById("registerPassword");
+            input.addEventListener("keypress", function (event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    document.getElementById("registerButton").click();
+                }
+            });
+        </script>
+    </form>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-analytics.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-auth.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-database.js";
+
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDvC9AMwRzzMRoDv1wId7CyLB8xUAmrTzU",
+            authDomain: "ecom-f6cc0.firebaseapp.com",
+            databaseURL: "https://ecom-f6cc0-default-rtdb.firebaseio.com",
+            projectId: "ecom-f6cc0",
+            storageBucket: "ecom-f6cc0.appspot.com",
+            messagingSenderId: "763921053227",
+            appId: "1:763921053227:web:3e9eca1f2bb024ddfd1c6e",
+            measurementId: "G-F79K7LJPY0"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth();
+        const database = getDatabase();
+
+        // Function to store user data under 'users' node
+        function storeUserData(userId, username, email) {
+        const userRef = ref(database, 'users/' + userId);
+        set(userRef, {
+            username: username,
+            email: email
+        });
+        }
+
+        // Registration Form
+        document.getElementById("registerButton").addEventListener("click", function () {
+            
+            const email = document.getElementById("registerEmail").value;
+            const password = document.getElementById("registerPassword").value;
+            const username = document.getElementById("uname").value;
+
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    console.log("Registration successful:", user);
+                    alert("Registration successful!");
+
+                    // Store username and email under 'users' node
+                    storeUserData(user.uid, username, email);
+
+                    window.location.href = "login.html";
+
+                })
+                .catch((error) => {
+                    const errorMessage = error.message;
+                    console.error("Registration failed:", errorMessage);
+                    alert("Registration failed: " + errorMessage);
+
+                });
+        });
+        // Function to delete user data when account is deleted
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            // User is signed in.
+        } else {
+            // User is signed out.
+            // Delete user data from 'users' node
+            const userId = user.uid;
+            const userRef = ref(database, 'users/' + userId);
+            remove(userRef)
+                .then(() => {
+                    console.log("User data deleted successfully.");
+                })
+                .catch((error) => {
+                    console.error("Error deleting user data:", error.message);
+                });
+        }
+    });
+    </script>
+</body>
+
+</html>

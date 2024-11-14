@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shopping Cart</title>
+<link rel="stylesheet" href="cart.css">
+</head>
+<body>
+  <div class="container">
+    <nav id="heading">
+      <h1>CART</h1>
+    </nav>
+    <div id="no-items" style="display: none;">
+      <h1><b>Cart is empty.!!</b></h1>
+      <a href="index.html">SHOP NOW</a>
+    </div>
+    <div id="cart-items" class="cart-items">
+      <!-- Cart items will be dynamically added here -->
+    </div>
+  </div>
+<script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-database.js"></script>
+<!--  <script src="cart.js"></script> -->
+<script>
+    // Initialize Firebase
+  var firebaseConfig = {
+    apiKey: "AIzaSyDvC9AMwRzzMRoDv1wId7CyLB8xUAmrTzU",
+        authDomain: "ecom-f6cc0.firebaseapp.com",
+        databaseURL: "https://ecom-f6cc0-default-rtdb.firebaseio.com",
+        projectId: "ecom-f6cc0",
+        storageBucket: "ecom-f6cc0.appspot.com",
+        messagingSenderId: "763921053227",
+        appId: "1:763921053227:web:3e9eca1f2bb024ddfd1c6e",
+        measurementId: "G-F79K7LJPY0"
+  };
+  firebase.initializeApp(firebaseConfig);
+
+
+// Reference to the cart items in Firebase
+var cartRef = firebase.database().ref('products');
+
+function displayCartItems(cartItems) {
+  var cartItemsContainer = document.getElementById('cart-items');
+  cartItemsContainer.innerHTML = ''; // Clear previous items
+
+  cartItems.forEach(function(item) {
+    var totalPrice = item.quantity * item.price;
+    var cartItemHTML = `
+      <div class="cart-item">
+        <img src="${item.image}" alt="${item.name}" class="product-image"> <!-- Use the image field -->
+        <div class="product-details">
+          <p class="product-name">${item.name}</p>
+          <p class="product-price">${item.price}</p>
+          <input type="number" class="quantity-input" value="${item.quantity}" min="1" onchange="updateTotalPrice(this, ${item.price})">
+          <select class="size-select">
+            <option value="S">S</option>
+            <option value="M">M</option>
+            <option value="L">L</option>
+            <option value="XL">XL</option>
+          </select>
+          
+          <button class="buy-btn" onclick="buyNow('${item.name}', '${item.price}')">Buy Now</button>
+          <button class="delete-btn" onclick="deleteItem('${item.key}')">Delete</button>
+        </div>
+      </div>
+    `;
+    cartItemsContainer.innerHTML += cartItemHTML;
+  });
+
+  // Display no-items div if cart is empty
+  var noItemsDiv = document.getElementById('no-items');
+  if (cartItems.length === 0) {
+    noItemsDiv.style.display = 'block';
+  } else {
+    noItemsDiv.style.display = 'none';
+  }
+}
+
+// Function to update total price based on quantity
+function updateTotalPrice(input, price) {
+  var quantity = parseInt(input.value);
+  var totalPriceElement = input.parentElement.querySelector('.product-price');
+  var totalPrice = quantity * price;
+  totalPriceElement.textContent = totalPrice.toFixed(2);
+}
+/*
+// Attach event listeners to quantity inputs to update total price dynamically
+document.addEventListener('DOMContentLoaded', function() {
+  var quantityInputs = document.querySelectorAll('.quantity-input');
+  quantityInputs.forEach(function(input) {
+    input.addEventListener('input', function() {
+      var price = parseFloat(input.parentElement.querySelector('.product-price').textContent);
+      updateTotalPrice(input, price);
+    });
+  });
+});
+
+// Call updateTotalPrice when the page loads to ensure initial calculation
+document.addEventListener('DOMContentLoaded', function() {
+  var quantityInputs = document.querySelectorAll('.quantity-input');
+  quantityInputs.forEach(function(input) {
+    var price = parseFloat(input.parentElement.querySelector('.product-price').textContent);
+    updateTotalPrice(input, price);
+  });
+});
+*/
+// Function to handle Buy Now button click
+function buyNow(productName, price) {
+  // Here you can redirect the user to the payment page
+  // For demonstration purposes, let's just log the product details
+  console.log("Buy Now:", productName, price);
+  // Redirect to payment page
+  window.location.href = 'newPayment.html';
+}
+
+// Function to handle Delete button click
+function deleteItem(productKey) {
+  // Remove the item from the database
+  cartRef.child(productKey).remove()
+    .then(function() {
+      console.log("Item removed successfully from the database");
+    })
+    .catch(function(error) {
+      console.error("Error removing item from database: ", error);
+    });
+}
+
+// Listen for changes in the cart items in Firebase
+cartRef.on('value', function(snapshot) {
+  var cartItems = []; // Array to store cart items
+  
+  snapshot.forEach(function(childSnapshot) {
+    var item = childSnapshot.val();
+    item.key = childSnapshot.key; // Add the key to the item object
+    cartItems.push(item);
+  });
+  
+  // Call function to display cart items
+  displayCartItems(cartItems);
+});
+</script>
+</body>
+</html>

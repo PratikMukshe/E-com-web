@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<style>
+    body {
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+input[type="text"],
+input[type="email"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+</style>
+<body>
+  <div class="container">
+    <h2>User Profile</h2>
+    <div id="profile-info">
+      <label for="name">Name:</label>
+      <input type="text" id="name" disabled><br>
+      <label for="email">Email:</label>
+      <input type="email" id="email" disabled><br>
+      <h3>Cart Details:</h3>
+      <ul id="cart-details"></ul>
+      <button id="edit-profile-btn">Edit Profile</button>
+    </div>
+    <div id="edit-profile" style="display: none;">
+      <label for="new-name">New Name:</label>
+      <input type="text" id="new-name"><br>
+      <label for="new-email">New Email:</label>
+      <input type="email" id="new-email"><br>
+      <button id="save-profile-btn">Save</button>
+    </div>
+  </div>
+  
+  <script src="https://www.gstatic.com/firebasejs/9.4.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.4.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.4.0/firebase-database.js"></script>
+  <script src="app.js"></script>
+</body>
+<script>
+    // Initialize Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyDvC9AMwRzzMRoDv1wId7CyLB8xUAmrTzU",
+    authDomain: "ecom-f6cc0.firebaseapp.com",
+    databaseURL: "https://ecom-f6cc0-default-rtdb.firebaseio.com",
+    projectId: "ecom-f6cc0",
+    storageBucket: "ecom-f6cc0.appspot.com",
+    messagingSenderId: "763921053227",
+    appId: "1:763921053227:web:3e9eca1f2bb024ddfd1c6e",
+    measurementId: "G-F79K7LJPY0"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.database();
+const auth = firebase.auth();
+
+// Fetch cart details from the database
+const fetchCartDetails = () => {
+  const userId = auth.currentUser.uid;
+  const cartRef = db.ref('carts/' + userId);
+
+  cartRef.on('value', snapshot => {
+    const cartData = snapshot.val();
+    const cartList = document.getElementById('cart-details');
+    cartList.innerHTML = ''; // Clear previous cart details
+
+    if (cartData) {
+      Object.keys(cartData).forEach(productId => {
+        const cartItem = cartData[productId];
+        const listItem = document.createElement('li');
+        listItem.textContent = `${cartItem.quantity} x ${cartItem.productName}`;
+        cartList.appendChild(listItem);
+      });
+    } else {
+      cartList.innerHTML = '<li>No items in cart</li>';
+    }
+  });
+};
+
+// Check if user is logged in
+auth.onAuthStateChanged(user => {
+  if (user) {
+    // User is signed in
+    const userId = user.uid;
+    const userRef = db.ref('users/' + userId);
+
+    userRef.on('value', snapshot => {
+      const userData = snapshot.val();
+      document.getElementById('name').value = userData.name;
+      document.getElementById('email').value = userData.email;
+    });
+
+    // Fetch cart details
+    fetchCartDetails();
+
+    // Show profile section
+    document.getElementById('profile-info').style.display = 'block';
+  } else {
+    // User is signed out
+    console.log('User is signed out');
+    // Redirect to login page or handle accordingly
+  }
+});
+
+// Edit Profile button click event
+document.getElementById('edit-profile-btn').addEventListener('click', () => {
+  document.getElementById('profile-info').style.display = 'none';
+  document.getElementById('edit-profile').style.display = 'block';
+});
+
+// Save Profile button click event
+document.getElementById('save-profile-btn').addEventListener('click', () => {
+  const newName = document.getElementById('new-name').value;
+  const newEmail = document.getElementById('new-email').value;
+  
+  // Update user profile in database
+  const userId = auth.currentUser.uid;
+  const userRef = db.ref('users/' + userId);
+  userRef.update({
+    name: newName,
+    email: newEmail
+  }).then(() => {
+    // Profile updated successfully
+    alert('Profile updated successfully!');
+    document.getElementById('profile-info').style.display = 'block';
+    document.getElementById('edit-profile').style.display = 'none';
+  }).catch(error => {
+    // Handle error
+    console.error('Error updating profile:', error);
+    alert('Error updating profile. Please try again.');
+  });
+});
+
+</script>
+</html>
